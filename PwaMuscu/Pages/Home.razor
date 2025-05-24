@@ -1,0 +1,185 @@
+﻿@page "/"
+@using PwaMuscu.Models
+@using PwaMuscu.Services
+@inject PoidsService PoidsService
+
+<div class="container mt-4">
+    <h3 class="mb-4">Journal de Musculation</h3>
+
+    <div class="row mb-3">
+        <div class="col-md-4 mb-2">
+            <label class="form-label">Exercice</label>
+            <select class="form-select" @bind="selectedExercice">
+                @foreach (var ex in exercices)
+                {
+                    <option value="@ex">@ex</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-md-4 mb-2">
+            <label class="form-label">Ajouter un nouvel exercice</label>
+            <input class="form-control" @bind="newExercice" placeholder="Nouveau exercice" />
+        </div>
+
+        <div class="col-md-4 mb-2 d-flex align-items-end">
+            <button class="btn btn-outline-secondary w-100" @onclick="AddExercice">Ajouter</button>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Date</label>
+            <input class="form-control" type="date" @bind="selectedDate" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Poids (kg)</label>
+            <input class="form-control" type="number" @bind="poids" />
+        </div>
+    </div>
+
+    <button class="btn btn-primary w-100 mb-5" @onclick="AddEntry">Enregistrer</button>
+
+    @if (data.Count > 0)
+    {
+        <h4 class="mb-3">Historique</h4>
+
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label class="form-label">Supprimer un exercice</label>
+                <div class="input-group">
+                    <select class="form-select" @bind="selectedExerciceToDelete">
+                        @foreach (var ex in exercices)
+                        {
+                            <option value="@ex">@ex</option>
+                        }
+                    </select>
+                    <button class="btn btn-danger" @onclick="DeleteExercice">🗑️</button>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Supprimer une date</label>
+                <div class="input-group">
+                    <select class="form-select" @bind="selectedDateToDelete">
+                        @foreach (var date in allDates)
+                        {
+                            <option value="@date">@date.ToString("dd MMM yyyy")</option>
+                        }
+                    </select>
+                    <button class="btn btn-danger" @onclick="DeleteDate">🗑️</button>
+                </div>
+            </div>
+        </div>
+
+        <table class="table table-bordered table-sm text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Exercice</th>
+                    @foreach (var date in allDates)
+                    {
+                        <th>@date.ToString("dd MMM")</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var ex in data.GroupBy(e => e.Exercice))
+                {
+                    <tr>
+                        <td class="fw-bold">@ex.Key</td>
+                        @foreach (var date in allDates)
+                        {
+                            var match = ex.FirstOrDefault(e => e.Date.Date == date.Date);
+                            <td>
+                                @if (match != null)
+                                {
+                                    <div>@match.Poids kg</div>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="@(() => DeleteEntry(match.Exercice, match.Date))">❌</button>
+                                }
+                                else
+                                {
+                                    <div>-</div>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    List<string> exercices = new();
+    string selectedExercice = "";
+    string newExercice = "";
+    DateTime selectedDate = DateTime.Today;
+    double poids;
+
+    List<PoidsEntry> data = new();
+    List<DateTime> allDates = new();
+
+    string selectedExerciceToDelete = "";
+    DateTime selectedDateToDelete = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        exercices = await PoidsService.GetExercicesAsync();
+        selectedExercice = exercices.FirstOrDefault() ?? "";
+        data = await PoidsService.GetEntriesAsync();
+        UpdateDates();
+    }
+
+    async void AddExercice()
+    {
+        if (!string.IsNullOrWhiteSpace(newExercice) && !exercices.Contains(newExercice))
+        {
+            exercices.Add(newExercice);
+            selectedExercice = newExercice;
+            newExercice = "";
+            await PoidsService.SaveExercicesAsync(exercices);
+        }
+    }
+
+    async Task AddEntry()
+    {
+        var entry = new PoidsEntry
+            {
+                Exercice = selectedExercice,
+                Date = selectedDate,
+                Poids = poids
+            };
+
+        await PoidsService.AddEntryAsync(entry);
+        data = await PoidsService.GetEntriesAsync();
+        UpdateDates();
+    }
+
+    async Task DeleteEntry(string exercice, DateTime date)
+    {
+        await PoidsService.RemoveEntryAsync(exercice, date);
+        data = await PoidsService.GetEntriesAsync();
+        UpdateDates();
+    }
+
+    async Task DeleteExercice()
+    {
+        await PoidsService.RemoveExerciceAsync(selectedExerciceToDelete);
+        exercices.Remove(selectedExerciceToDelete);
+        await PoidsService.SaveExercicesAsync(exercices);
+        data = await PoidsService.GetEntriesAsync();
+        UpdateDates();
+    }
+
+    async Task DeleteDate()
+    {
+        await PoidsService.RemoveDateAsync(selectedDateToDelete);
+        data = await PoidsService.GetEntriesAsync();
+        UpdateDates();
+    }
+
+    void UpdateDates()
+    {
+        allDates = data.Select(e => e.Date.Date).Distinct().OrderBy(d => d).ToList();
+    }
+}

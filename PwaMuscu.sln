@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35828.75 d17.13
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PwaMuscu", "PwaMuscu\PwaMuscu.csproj", "{930DF366-D348-4EBD-9A80-EA5B9F9F7174}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{930DF366-D348-4EBD-9A80-EA5B9F9F7174}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{930DF366-D348-4EBD-9A80-EA5B9F9F7174}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{930DF366-D348-4EBD-9A80-EA5B9F9F7174}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{930DF366-D348-4EBD-9A80-EA5B9F9F7174}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1E9DB336-37BF-4C96-987E-65A14C6DF81C}
+	EndGlobalSection
+EndGlobal
